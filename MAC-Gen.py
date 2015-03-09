@@ -23,6 +23,23 @@ class ChangeMAC:
 
 		print self.getIface() + ' ' + state
 
+	def setDefaultGateway(self, defaultG):
+		args = shlex.split('sudo ip route add default via ' + defaultG)
+		p = subprocess.Popen(args,\
+			stdout=subprocess.PIPE,\
+			stderr=subprocess.PIPE)
+		out, err = p.communicate()
+
+	def getDefaultGateway(self):
+		with open('/proc/net/route') as fh:
+			for line in fh:
+				fields = line.strip().split()
+
+				if fields[1] != '00000000' or not int(fields[3], 16) & 2:
+					continue
+
+				return socket.inet_ntoa(struct.pack('=L', int(fields[2], 16)))
+
 	def setMAC(self, MACaddr=None):
 		print 'Previous MAC address ' + self.getHwAddr(self.getIface())
 
@@ -50,6 +67,7 @@ class ChangeMAC:
 class UI:
 	def __init__(self):
 		cm = ChangeMAC()
+		dg = cm.getDefaultGateway()
 
 		if len(sys.argv) < 2:
 			print 'Usage MAC-Gen <iface>'
@@ -69,11 +87,13 @@ class UI:
 					cm.ifState('down')
 					cm.setMAC(None)
 					cm.ifState('up')
+					cm.setDefaultGateway(dg)
 			elif len(sys.argv) == 3:
 					cm.setIface(sys.argv[1])
 					cm.ifState('down')
 					cm.setMAC(sys.argv[2])
 					cm.ifState('up')
+					cm.setDefaultGateway(dg)
 
 if __name__ == '__main__':
 	ui = UI()
