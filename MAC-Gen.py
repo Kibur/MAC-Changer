@@ -24,6 +24,9 @@ class ChangeMAC:
 		print self.getIface() + ' ' + state
 
 	def setDefaultGateway(self, defaultG):
+		if defaultG is None:
+			sys.exit('Failed gathering default-gateway')
+
 		args = shlex.split('sudo ip route add default via ' + defaultG)
 		p = subprocess.Popen(args,\
 			stdout=subprocess.PIPE,\
@@ -65,6 +68,13 @@ class ChangeMAC:
 		self.iface = iface
 
 class UI:
+	def configurate(self, cm, dg, iface, MACaddr=None):
+		cm.setIface(iface)
+		cm.ifState('down')
+		cm.setMAC(MACaddr)
+		cm.ifState('up')
+		cm.setDefaultGateway(dg)
+
 	def __init__(self):
 		cm = ChangeMAC()
 		dg = cm.getDefaultGateway()
@@ -83,17 +93,9 @@ class UI:
 					print 'This will set your chosen MAC address for this interface'
 					sys.exit(0)
 				else:
-					cm.setIface(sys.argv[1])
-					cm.ifState('down')
-					cm.setMAC(None)
-					cm.ifState('up')
-					cm.setDefaultGateway(dg)
+					self.configurate(cm, dg, sys.argv[1])
 			elif len(sys.argv) == 3:
-					cm.setIface(sys.argv[1])
-					cm.ifState('down')
-					cm.setMAC(sys.argv[2])
-					cm.ifState('up')
-					cm.setDefaultGateway(dg)
+					self.configurate(cm, dg, sys.argv[1], sys.argv[2])
 
 if __name__ == '__main__':
 	ui = UI()
