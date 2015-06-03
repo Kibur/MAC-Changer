@@ -15,7 +15,7 @@ class ChangeMAC:
 		return self.iface
 
 	def ifState(self, state):
-		args = shlex.split('sudo ifconfig ' + self.getIface() + ' ' + state)
+		args = shlex.split('sudo ip link set dev ' + self.getIface() + ' ' + state)
 		p = subprocess.Popen(args,\
 			stdout=subprocess.PIPE,\
 			stderr=subprocess.PIPE)
@@ -47,7 +47,7 @@ class ChangeMAC:
 		print 'Previous MAC address ' + self.getHwAddr(self.getIface())
 
 		if MACaddr is None: MACaddr = self.randomMAC()
-		args = shlex.split('sudo ifconfig ' + self.getIface() + ' hw ether ' + MACaddr)
+		args = shlex.split('sudo ip link set dev ' + self.getIface() + ' address ' + MACaddr)
 		p = subprocess.Popen(args,\
 			stdout=subprocess.PIPE,\
 			stderr=subprocess.PIPE)
